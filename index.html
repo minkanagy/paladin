@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paladin Technologies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #080b0f;
+      --accent: #00e5ff;
+      --accent2: #0066ff;
+      --border: #1e2d3d;
+      --muted: #4a6070;
+      --text: #e8edf2;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+      z-index: 0;
+    }
+
+    /* grid bg */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.25;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 10%, transparent 100%);
+    }
+
+    /* ambient glow */
+    .glow {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(0,102,255,0.09) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    /* corner decorations */
+    .corner {
+      position: fixed;
+      width: 60px; height: 60px;
+      pointer-events: none;
+    }
+    .corner--tl { top: 2rem; left: 2rem; border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+    .corner--tr { top: 2rem; right: 2rem; border-top: 1px solid var(--border); border-right: 1px solid var(--border); }
+    .corner--bl { bottom: 2rem; left: 2rem; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); }
+    .corner--br { bottom: 2rem; right: 2rem; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+
+    /* top status bar */
+    .status-bar {
+      position: fixed;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      animation: fadeDown 0.8s 0.2s ease both;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    /* main container */
+    .container {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* tag line above */
+    .pre-tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+    .pre-tag::before, .pre-tag::after {
+      content: '';
+      display: block;
+      width: 1.5rem; height: 1px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    /* logo */
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      line-height: 1;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .logo .dot { color: var(--accent); }
+
+    .logo .tech {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(232, 237, 242, 0.35);
+    }
+
+    /* horizontal rule */
+    .rule {
+      width: 100%;
+      max-width: 420px;
+      height: 1px;
+      margin: 2.2rem 0;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      animation: fadeUp 0.7s 0.3s ease both;
+      position: relative;
+    }
+
+    .rule::before {
+      content: '';
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 5px; height: 5px;
+      border: 1px solid var(--accent);
+      rotate: 45deg;
+      background: var(--bg);
+    }
+
+    /* coming soon */
+    .coming-soon {
+      font-size: 0.68rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted);
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+
+    /* countdown */
+    .countdown {
+      display: flex;
+      gap: 2rem;
+      margin-top: 3rem;
+      animation: fadeUp 0.7s 0.5s ease both;
+    }
+
+    .count-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .count-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      min-width: 2.5ch;
+      text-align: center;
+    }
+
+    .count-label {
+      font-size: 0.55rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .count-sep {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 300;
+      color: var(--border);
+      align-self: flex-start;
+      margin-top: 0.1rem;
+    }
+
+    /* notify input */
+    .notify {
+      margin-top: 3rem;
+      display: flex;
+      gap: 0;
+      animation: fadeUp 0.7s 0.6s ease both;
+    }
+
+    .notify input {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-right: none;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      padding: 0.75rem 1.2rem;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s;
+    }
+
+    .notify input::placeholder { color: var(--muted); }
+    .notify input:focus { border-color: var(--accent); }
+
+    .notify button {
+      background: var(--accent);
+      color: var(--bg);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      padding: 0.75rem 1.4rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .notify button:hover { opacity: 0.85; }
+
+    /* bottom bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 2rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0.5;
+      animation: fadeUp 0.8s 0.8s ease both;
+    }
+
+    /* animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid-bg"></div>
+  <div class="glow"></div>
+
+  <!-- corners -->
+  <div class="corner corner--tl"></div>
+  <div class="corner corner--tr"></div>
+  <div class="corner corner--bl"></div>
+  <div class="corner corner--br"></div>
+
+  <!-- status -->
+  <div class="status-bar">
+    <span class="status-dot"></span>
+    System initializing
+  </div>
+
+  <!-- main -->
+  <div class="container">
+    <p class="pre-tag">Est. 2025</p>
+
+    <div class="logo">
+      Paladin<span class="dot">.</span><br/>
+      <span class="tech">Technologies</span>
+    </div>
+
+    <div class="rule"></div>
+
+    <p class="coming-soon">Coming Soon</p>
+
+    <div class="countdown">
+      <div class="count-block">
+        <span class="count-val" id="days">00</span>
+        <span class="count-label">Days</span>
+      </div>
+      <span class="count-sep">:</span>
+      <div class="count-block">
+        <span class="count-val" id="hours">00</span>
+        <span class="count-label">Hours</span>
+      </div>
+      <span class="count-sep">:</span>
+      <div class="count-block">
+        <span class="count-val" id="mins">00</span>
+        <span class="count-label">Mins</span>
+      </div>
+      <span class="count-sep">:</span>
+      <div class="count-block">
+        <span class="count-val" id="secs">00</span>
+        <span class="count-label">Secs</span>
+      </div>
+    </div>
+
+<!-- <div class="notify">
+  <input type="email" placeholder="your@email.com" />
+  <button>Notify me</button>
+</div> -->
+  <!-- bottom -->
+  <div class="bottom-bar">© 2026 Paladin Technologies — All rights reserved</div>
+
+  <script>
+    // Countdown to May 2 2026
+    const target = new Date('2026-05-02T00:00:00');
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+      const now = new Date();
+      const diff = target - now;
+      if (diff <= 0) {
+        document.getElementById('days').textContent = '00';
+        document.getElementById('hours').textContent = '00';
+        document.getElementById('mins').textContent = '00';
+        document.getElementById('secs').textContent = '00';
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('days').textContent = pad(d);
+      document.getElementById('hours').textContent = pad(h);
+      document.getElementById('mins').textContent = pad(m);
+      document.getElementById('secs').textContent = pad(s);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
